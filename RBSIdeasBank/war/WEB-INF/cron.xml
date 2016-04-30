@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+  <cron>
+    <url>/WebScraperServlet</url>
+    <description>Mail out a daily report</description>
+    <schedule>every day 00:00</schedule>
+    <timezone>Europe/London</timezone>
+    <target>version-2</target>
+  </cron>
+</cronentries>

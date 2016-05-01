@@ -2,9 +2,15 @@
 <cronentries>
   <cron>
     <url>/WebScraperServlet</url>
+    <description>Check for new comments</description>
+    <schedule>every 10 mins</schedule>
+    <timezone>Europe/London</timezone>
+    <target>version-2</target>
+  </cron>
+  <cron>
+    <url>/WebScraperServlet</url>
     <description>Mail out a daily report</description>
     <schedule>every day 00:00</schedule>
-    <schedule>every 10 mins</schedule>
     <timezone>Europe/London</timezone>
     <target>version-2</target>
   </cron>

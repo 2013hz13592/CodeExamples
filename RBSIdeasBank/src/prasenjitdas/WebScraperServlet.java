@@ -169,14 +169,18 @@ public class WebScraperServlet extends HttpServlet {
 		if(!latestComment){
 			writeOutputCloudStorage(delimitedData,filename);
 		}
-		//Write the number of pages scanned and recent messages in the mail body
-		htmlBody=htmlBody+pageCount+" pages scanned";
-		//Email the content
-		if(latestComment){
-			delimitedData.delete(0, delimitedData.length());
-			delimitedData=delimitedData.append(";;;;;;;;;");
+		//Write the number of pages scanned and recent messages in the mail body if there are any
+		if (htmlBody.isEmpty()){
+			;
+		}else{
+			htmlBody=htmlBody+pageCount+" pages scanned";
+			//Email the content in mail body without attachment
+			if(latestComment){
+				delimitedData.delete(0, delimitedData.length());
+				delimitedData=delimitedData.append(";;;;;;;;;");
+			}
+			sendMessage(htmlBody, delimitedData, filename);
 		}
-		sendMessage(htmlBody, delimitedData, filename);
 	}
 	
 	public StringBuilder parsePage(boolean latestComment){

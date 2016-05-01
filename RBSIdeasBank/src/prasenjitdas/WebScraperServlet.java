@@ -181,7 +181,7 @@ public class WebScraperServlet extends HttpServlet {
 	
 	public StringBuilder parsePage(boolean latestComment){
 		int pageNumber=0;
-		boolean exitLoop = false;
+		boolean processAll = true;
 		String url=new String();
 		String author=new String();
 		String subject=new String();
@@ -205,7 +205,7 @@ public class WebScraperServlet extends HttpServlet {
 		updateLastRunTime=null;
 		
 		delimitedData=delimitedData.append("Subject,Status,Author,Date,Time,Comment,Label1,Label2,Label3,Predicted\n");
-		while(true)
+		while(processAll)
 		{
 			//Increment  Page Number for fetching next page
 			pageNumber++;
@@ -390,15 +390,12 @@ public class WebScraperServlet extends HttpServlet {
 					}
 					newComment=true;
 				}else{
-				//Break out of the loop once if latestComment flag is true
+				//Stop processing pages once comments added since last run are processed if latestComment flag is true
 					if(latestComment){
-						exitLoop=true;
+						processAll=false;
 						break;
 					}
 				}
-			}
-			if(exitLoop){
-				break;
 			}
 		}
 		return delimitedData;

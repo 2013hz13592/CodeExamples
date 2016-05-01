@@ -71,7 +71,6 @@ public class WebScraperServlet extends HttpServlet {
 	private String stringLastRunDate;
 	private Date lastRunDate;
 	private static SimpleDateFormat dateFormatter;
-	private String stringFiveMinutesPastMidnight;
 	private String stringLastRunTime;
 	private Time lastRunTime;
 	private static SimpleDateFormat timeFormatter;
@@ -88,14 +87,14 @@ public class WebScraperServlet extends HttpServlet {
 	/** All the comments with date greater than stringLastRunDate will be written in the message body */	
 		stringLastRunDate="17-04-2016";
 		stringLastRunTime="12:00 AM";
-		stringFiveMinutesPastMidnight="12:05 AM";
 	}
 	
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {		
 		String key=new String();
 		Cache cache = null;
-		Time midnight = null, fiveMinutesPastMidnight = null;
+		Calendar midnight = null;
+		Calendar fiveMinutesPastMidnight = null;
 		boolean latestComment=true;
 		StringBuilder delimitedData=new StringBuilder();
 		
@@ -136,14 +135,16 @@ public class WebScraperServlet extends HttpServlet {
 				e.printStackTrace();
 			}
 		}
-		try {
-			midnight = new Time(timeFormatter.parse(stringLastRunTime).getTime());
-			fiveMinutesPastMidnight = new Time (timeFormatter.parse(stringFiveMinutesPastMidnight).getTime());
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
+		midnight = Calendar.getInstance();
+		midnight.set(Calendar.HOUR_OF_DAY, 0);
+		midnight.set(Calendar.MINUTE, 0);
+		midnight.set(Calendar.SECOND, 0);
+		fiveMinutesPastMidnight = Calendar.getInstance();
+		fiveMinutesPastMidnight.set(Calendar.HOUR_OF_DAY, 0);
+		fiveMinutesPastMidnight.set(Calendar.MINUTE, 5);
+		fiveMinutesPastMidnight.set(Calendar.SECOND, 0);
 		//If this is module is run at any other than other than midnight it will only fetch the latest comments
-		if(Calendar.getInstance().getTime().after(midnight) && Calendar.getInstance().getTime().before(fiveMinutesPastMidnight)){
+		if(Calendar.getInstance().getTime().after(midnight.getTime()) && Calendar.getInstance().getTime().before(fiveMinutesPastMidnight.getTime())){
 			latestComment=false;
 		}
 		//Parse the RBS Idea Bank Portal and obtain the comma delimited output String
@@ -171,6 +172,10 @@ public class WebScraperServlet extends HttpServlet {
 		//Write the number of pages scanned and recent messages in the mail body
 		htmlBody=htmlBody+pageCount+" pages scanned";
 		//Email the content
+		if(latestComment){
+			delimitedData.delete(0, delimitedData.length());
+			delimitedData=delimitedData.append(";;;;;;;;;");
+		}
 		sendMessage(htmlBody, delimitedData, filename);
 	}
 	
@@ -422,14 +427,18 @@ public class WebScraperServlet extends HttpServlet {
 		    MimeBodyPart htmlPart = new MimeBodyPart();
 	    	htmlPart.setContent(messageBody, "text/html");
 	    	mp.addBodyPart(htmlPart);
-	    	 	
-	    	MimeBodyPart attachment = new MimeBodyPart();
-	    	String attachmentDataString = attachmentData.toString();
-	    	byte[] attachmentDataByte = attachmentDataString.getBytes();
-	    	InputStream attachmentDataStream = new ByteArrayInputStream(attachmentDataByte);
-	    	attachment.setFileName(attachmentFilename);
-	    	attachment.setContent(attachmentDataStream, "text/comma-separated-values");
-	    	mp.addBodyPart(attachment);
+	    	
+	    	if(attachmentData.toString().equals(";;;;;;;;;")){
+	    		;
+	    	}else{
+	    		MimeBodyPart attachment = new MimeBodyPart();
+		    	String attachmentDataString = attachmentData.toString();
+		    	byte[] attachmentDataByte = attachmentDataString.getBytes();
+		    	InputStream attachmentDataStream = new ByteArrayInputStream(attachmentDataByte);
+		    	attachment.setFileName(attachmentFilename);
+		    	attachment.setContent(attachmentDataStream, "text/comma-separated-values");
+		    	mp.addBodyPart(attachment);
+	    	}
 	    		
 	    	Message msg = new MimeMessage(session);
 	    	msg.setFrom(new InternetAddress("daemon@certain-density-126216.appspotmail.com", "WebScraperDaemon"));

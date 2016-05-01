@@ -95,7 +95,7 @@ public class WebScraperServlet extends HttpServlet {
 		Cache cache = null;
 		Calendar midnight = null;
 		Calendar fiveMinutesPastMidnight = null;
-		boolean latestComment=true;
+		boolean getLatestComment=true;
 		StringBuilder delimitedData=new StringBuilder();
 		
 		try{
@@ -145,10 +145,10 @@ public class WebScraperServlet extends HttpServlet {
 		fiveMinutesPastMidnight.set(Calendar.SECOND, 0);
 		//If this is module is run at any other than other than midnight it will only fetch the latest comments
 		if(Calendar.getInstance().getTime().after(midnight.getTime()) && Calendar.getInstance().getTime().before(fiveMinutesPastMidnight.getTime())){
-			latestComment=false;
+			getLatestComment=false;
 		}
 		//Parse the RBS Idea Bank Portal and obtain the comma delimited output String
-		delimitedData=parsePage(latestComment);
+		delimitedData=parsePage(getLatestComment);
 		//Once all the records are processed update the lastRunDate/lastRun Time to the date/time of the first comment on the first page i.e. the latest comment
 		if(newComment){
 			lastRunDate=updateLastRunDate;
@@ -166,7 +166,7 @@ public class WebScraperServlet extends HttpServlet {
 		Date now = new Date();
 		String strDate = sdfDate.format(now);
 		String filename="output-"+strDate+".csv";
-		if(!latestComment){
+		if(!getLatestComment){
 			writeOutputCloudStorage(delimitedData,filename);
 		}
 		//Write the number of pages scanned and recent messages in the mail body if there are any
@@ -175,7 +175,7 @@ public class WebScraperServlet extends HttpServlet {
 		}else{
 			htmlBody=htmlBody+pageCount+" pages scanned";
 			//Email the content in mail body without attachment
-			if(latestComment){
+			if(getLatestComment){
 				delimitedData.delete(0, delimitedData.length());
 				delimitedData=delimitedData.append(";;;;;;;;;");
 			}
@@ -183,7 +183,7 @@ public class WebScraperServlet extends HttpServlet {
 		}
 	}
 	
-	public StringBuilder parsePage(boolean latestComment){
+	public StringBuilder parsePage(boolean getLatestComment){
 		int pageNumber=0;
 		boolean processAll = true;
 		String url=new String();
@@ -394,8 +394,8 @@ public class WebScraperServlet extends HttpServlet {
 					}
 					newComment=true;
 				}else{
-				//Stop processing pages once comments added since last run are processed if latestComment flag is true
-					if(latestComment){
+				//Stop processing pages once comments added since last run are processed if getLatestComment flag is true
+					if(getLatestComment){
 						processAll=false;
 						break;
 					}

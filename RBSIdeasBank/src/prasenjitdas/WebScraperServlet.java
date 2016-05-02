@@ -134,7 +134,7 @@ public class WebScraperServlet extends HttpServlet {
 			try{
 				lastRunTime=new Time(timeFormatter.parse(stringLastRunTime).getTime());
 			}catch (ParseException e){
-				System	.err.println("Something went wrong while formatting lastRunTime");
+				System.err.println("Something went wrong while formatting lastRunTime");
 				e.printStackTrace();
 			}
 		}
@@ -224,6 +224,7 @@ public class WebScraperServlet extends HttpServlet {
 			}
 			body=doc.body();
 			if(bodyPrev!=null && bodyPrev.text().equals(body.text())){
+				processAll=false;
 				break;
 			}
 			bodyPrev=body;
@@ -341,8 +342,7 @@ public class WebScraperServlet extends HttpServlet {
 					}finally{
 						delimitedData=delimitedData.append("\n");
 					}
-				}else
-				{
+				}else{
 					delimitedData=delimitedData.append(",");
 				}
 				//Add label1

@@ -14,7 +14,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import javax.cache.Cache;
 import javax.cache.CacheException;
@@ -74,6 +76,7 @@ public class WebScraperServlet extends HttpServlet {
 	private String stringLastRunTime;
 	private Time lastRunTime;
 	private static SimpleDateFormat timeFormatter;
+	private static final TimeZone UTC = TimeZone.getTimeZone("GMT");
 	
 	private boolean newComment=false;
 	private String htmlBody=new String();
@@ -135,16 +138,16 @@ public class WebScraperServlet extends HttpServlet {
 				e.printStackTrace();
 			}
 		}
-		midnight = Calendar.getInstance();
+		midnight = Calendar.getInstance(UTC);
 		midnight.set(Calendar.HOUR_OF_DAY, 0);
 		midnight.set(Calendar.MINUTE, 0);
 		midnight.set(Calendar.SECOND, 0);
-		fiveMinutesPastMidnight = Calendar.getInstance();
+		fiveMinutesPastMidnight = Calendar.getInstance(UTC);
 		fiveMinutesPastMidnight.set(Calendar.HOUR_OF_DAY, 0);
 		fiveMinutesPastMidnight.set(Calendar.MINUTE, 5);
 		fiveMinutesPastMidnight.set(Calendar.SECOND, 0);
 		//If this is module is run at any other than other than midnight it will only fetch the latest comments
-		if(Calendar.getInstance().getTime().after(midnight.getTime()) && Calendar.getInstance().getTime().before(fiveMinutesPastMidnight.getTime())){
+		if(Calendar.getInstance(UTC).getTime().after(midnight.getTime()) && Calendar.getInstance(UTC).getTime().before(fiveMinutesPastMidnight.getTime())){
 			getLatestComment=false;
 		}
 		//Parse the RBS Idea Bank Portal and obtain the comma delimited output String

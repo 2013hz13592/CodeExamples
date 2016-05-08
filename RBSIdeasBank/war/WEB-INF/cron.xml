@@ -4,14 +4,14 @@
     <url>/WebScraperServlet</url>
     <description>Check for new comments</description>
     <schedule>every 20 mins</schedule>
-    <timezone>Europe/London</timezone>
+    <timezone>UTC</timezone>
     <target>version-2</target>
   </cron>
   <cron>
     <url>/WebScraperServlet</url>
     <description>Mail out a daily report</description>
     <schedule>every day 00:00</schedule>
-    <timezone>Europe/London</timezone>
+    <timezone>UTC</timezone>
     <target>version-2</target>
   </cron>
 </cronentries>

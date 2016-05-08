@@ -5,7 +5,7 @@
   <version>1</version>
   <instance-class>B1</instance-class>
   <basic-scaling>
-  	<max-instances>5</max-instances>
+  	<max-instances>1</max-instances>
   	<idle-timeout>30m</idle-timeout>
   </basic-scaling>	
   <!--

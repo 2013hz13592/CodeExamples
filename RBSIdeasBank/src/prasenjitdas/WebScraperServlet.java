@@ -139,13 +139,22 @@ public class WebScraperServlet extends HttpServlet {
 			}
 		}
 		midnight = Calendar.getInstance(UTC);
+		midnight.set(Calendar.HOUR, 0);
+		midnight.set(Calendar.AM_PM, Calendar.AM);
 		midnight.set(Calendar.HOUR_OF_DAY, 0);
 		midnight.set(Calendar.MINUTE, 0);
 		midnight.set(Calendar.SECOND, 0);
+		midnight.set(Calendar.MILLISECOND, 0);
 		fiveMinutesPastMidnight = Calendar.getInstance(UTC);
+		fiveMinutesPastMidnight.set(Calendar.HOUR, 0);
+		fiveMinutesPastMidnight.set(Calendar.AM_PM, Calendar.AM);
 		fiveMinutesPastMidnight.set(Calendar.HOUR_OF_DAY, 0);
 		fiveMinutesPastMidnight.set(Calendar.MINUTE, 5);
 		fiveMinutesPastMidnight.set(Calendar.SECOND, 0);
+		fiveMinutesPastMidnight.set(Calendar.MILLISECOND, 0);
+		System.err.println(midnight.toString());
+		System.err.println(fiveMinutesPastMidnight.toString());
+		System.err.println(Calendar.getInstance(UTC).toString());
 		//If this is module is run at any other than other than midnight it will only fetch the latest comments
 		if(Calendar.getInstance(UTC).getTime().after(midnight.getTime()) && Calendar.getInstance(UTC).getTime().before(fiveMinutesPastMidnight.getTime())){
 			getLatestComment=false;

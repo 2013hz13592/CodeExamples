@@ -138,6 +138,7 @@ public class WebScraperServlet extends HttpServlet {
 				e.printStackTrace();
 			}
 		}
+		//Set time for daily report time check
 		midnight = Calendar.getInstance(UTC);
 		midnight.set(Calendar.HOUR, 0);
 		midnight.set(Calendar.AM_PM, Calendar.AM);
@@ -152,9 +153,6 @@ public class WebScraperServlet extends HttpServlet {
 		fiveMinutesPastMidnight.set(Calendar.MINUTE, 5);
 		fiveMinutesPastMidnight.set(Calendar.SECOND, 0);
 		fiveMinutesPastMidnight.set(Calendar.MILLISECOND, 0);
-		System.err.println(midnight.toString());
-		System.err.println(fiveMinutesPastMidnight.toString());
-		System.err.println(Calendar.getInstance(UTC).toString());
 		//If this is module is run at any other than other than midnight it will only fetch the latest comments
 		if(Calendar.getInstance(UTC).getTime().after(midnight.getTime()) && Calendar.getInstance(UTC).getTime().before(fiveMinutesPastMidnight.getTime())){
 			getLatestComment=false;
@@ -182,7 +180,7 @@ public class WebScraperServlet extends HttpServlet {
 			writeOutputCloudStorage(delimitedData,filename);
 		}
 		//Write the number of pages scanned and recent messages in the mail body if there are any
-		if (htmlBody.isEmpty()){
+		if (htmlBody.isEmpty() &&  getLatestComment){
 			;
 		}else{
 			htmlBody=htmlBody+pageCount+" pages scanned";

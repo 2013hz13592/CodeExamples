@@ -1,5 +1,3 @@
-
-
 var c= document.getElementById("blob");
 var b= c.getContext("2d");
 var noOftasks = 0;
@@ -57,7 +55,5 @@ function update()
         curr_x = curr_x + speed;
     }
    }
-
     window.requestAnimationFrame(update);
-    
 }

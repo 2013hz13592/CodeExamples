@@ -35,12 +35,13 @@
   .jumbotron {
       background-color: #f4511e;
       color: #fff;
-      padding: 30px 5px;
+      padding: 20px 10px;
       font-family: Montserrat, sans-serif;
-      height: 130px;
+      height: 110px;
   }
   .container-fluid {
       padding: 60px 50px;
+      background-color: #FFFF00;
   }
   .bg-grey {
       background-color: #f6f6f6;
@@ -216,43 +217,44 @@
     </div>
   </div>
 </nav>
-
 <div class="jumbotron text-left">
 	<h1>SAVE & LADDER</h1> 
 </div>
 <div ng-controller="myController">
 	<h3 style="color:black;">Score : {{score}}</h3>
-<div class="container-fluid " style = "width:100%">
-	<div class="row">
-    	<div class="col-sm-8" style = "width:29%; z-index:300;">
-      		<canvas id ='blob' width='378' height ='378' ></canvas>
-    	</div>
-    	<div class="col-sm-4" style = "">
-      		<div class>      
-				<div>
-					<li><button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-sm" onclick=" noOftasks++;" ng-click=updateScore()>Pay Tax</button></li><br>
+	<div class="container-fluid" style="width:100%">
+		<div class="row">
+    		<div class="col-sm-8" style="width:29%; z-index:300;">
+      			<canvas id ='blob' width='378' height ='378' ></canvas>
+    		</div>
+    		<div class="col-sm-4" style = "">
+      			<div class>      
+					<div>
+						<li><button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target=".bs-example-modal-sm" onclick=" noOftasks++;" ng-click=updateScore()>Pay Tax</button></li><br>
+					</div>
+					<div>
+						<li><button type="button" class="btn btn-primary btn-sm" onclick = "noOftasks++;" ng-click=updateScore()>Pay Mortgage</button></li><br>
+					</div>
+					<div>
+						<li><button type="button" class="btn btn-success btn-sm" onclick = "noOftasks++;" ng-click=updateScore()>Pay Electric Bill</button></li><br>
+					</div>
+        			<div>
+        				<li><button type="button" class="btn btn-info btn-sm" onclick = "noOftasks++;" ng-click=updateScore()>Clean the room</button></li><br>
+        			</div>
+        			<div>
+        				<li><button type="button" class="btn btn-warning btn-sm" data-toggle="modal1" data-target=".bs-homework-modal-sm" onclick="noOftasks++;" ng-click=updateScore()>Complete HomeWork</button></li><br>
+        			</div>
+        			<div>
+        				<li><button type="button" class="btn btn-danger btn-sm" data-toggle="modal1" data-target=".bs-homework-modal-sm" onclick="noOftasks++;" ng-click=updateScore()>Don't Watch TV</button></li><br>
+        			</div>
+					<div>
+						<li><button type="button" class="btn btn-default btn-sm" ng-click=pushToBank()>Push to Bank</button></li><br>
+					</div>
 				</div>
-				<div>
-					<li><button type="button" class="btn btn-success" onclick = "noOftasks++;" ng-click=updateScore()>Pay Mortgage</button></li><br>
-				</div>
-        		<div>
-        			<li><button type="button" class="btn btn-info" onclick = "noOftasks++;" ng-click=updateScore()>Clean the room</button></li><br>
-        		</div>
-        		<div>
-        			<li><button type="button" class="btn btn-warning" data-toggle="modal1" data-target=".bs-homework-modal-sm" onclick = " noOftasks++;" ng-click=updateScore()>Complete HomeWork</button></li><br>
-        		</div>
-				<div>
-					<li><button type="button" class="btn btn-danger" ng-click=pushToBank()>Push to Bank</button></li><br>
-				</div>
-			</div>
-      	</div>
-    </div> 
+      		</div>
+    	</div> 
+	</div>
 </div>
-</div>
-
-<script>
-
-</script>
  
 <footer class="container-fluid text-center">
   <a href="#myPage" title="To Top">

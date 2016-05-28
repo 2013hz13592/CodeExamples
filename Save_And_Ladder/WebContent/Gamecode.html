@@ -12,7 +12,6 @@
   <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
   <script language="javascript" src="angular.min_1.2.9.js"></script>
   <script language="javascript" src="Save_And_Ladder_Function.js"></script>
- 
   <style>
   body {
       font: 400 15px Lato, sans-serif;
@@ -219,37 +218,37 @@
 </nav>
 
 <div class="jumbotron text-left">
-  <h1>SAVE & LADDER</h1> 
+	<h1>SAVE & LADDER</h1> 
 </div>
-<div ng-controller="myController"><h3 style="color:black;">Score : </h3>{{score}}</div>
-<!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-sm">Small modal</button> -->
+<div ng-controller="myController">
+	<h3 style="color:black;">Score : {{score}}</h3>
 <div class="container-fluid " style = "width:100%">
-  <div class="row">
-    <div class="col-sm-8" style = "width:29%; z-index:300;">
-      <canvas id ='blob' width='378' height ='378' ></canvas>
-    </div>
-    <div class="col-sm-4" style = "">
-      <div class ng-controller="myController">      
-		<div>
-			<li><button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-sm" onclick=" noOftasks++;" ng-click=updateScore()>Pay Tax</button></li><br>
-		</div>
-		<div>
-			<li><button type="button" class="btn btn-primary" onclick = "noOftasks++;" ng-click=updateScore()>Pay Mortgage</button></li><br>
-		</div>
-        <div>
-        	<li><button type="button" class="btn btn-warning" onclick = "noOftasks++;" ng-click=updateScore()>Clean the room</button></li><br>
-        </div>
-        <div>
-        	<li><button type="button" class="btn btn-success" data-toggle="modal1" data-target=".bs-example-modal-sm" onclick = " noOftasks++;" ng-click=updateScore()>Complete HomeWork</button></li><br>
-        </div>
-		<div >
-			<li><button type="button" class="btn btn-warning" ng-click=pushToBank()>Push to Bank</button></li><br>
-		</div>
-       </div>
-      </div>
+	<div class="row">
+    	<div class="col-sm-8" style = "width:29%; z-index:300;">
+      		<canvas id ='blob' width='378' height ='378' ></canvas>
+    	</div>
+    	<div class="col-sm-4" style = "">
+      		<div class>      
+				<div>
+					<li><button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-sm" onclick=" noOftasks++;" ng-click=updateScore()>Pay Tax</button></li><br>
+				</div>
+				<div>
+					<li><button type="button" class="btn btn-success" onclick = "noOftasks++;" ng-click=updateScore()>Pay Mortgage</button></li><br>
+				</div>
+        		<div>
+        			<li><button type="button" class="btn btn-info" onclick = "noOftasks++;" ng-click=updateScore()>Clean the room</button></li><br>
+        		</div>
+        		<div>
+        			<li><button type="button" class="btn btn-warning" data-toggle="modal1" data-target=".bs-homework-modal-sm" onclick = " noOftasks++;" ng-click=updateScore()>Complete HomeWork</button></li><br>
+        		</div>
+				<div>
+					<li><button type="button" class="btn btn-danger" ng-click=pushToBank()>Push to Bank</button></li><br>
+				</div>
+			</div>
+      	</div>
     </div> 
-  </div>
-
+</div>
+</div>
 
 <script>
 
@@ -301,31 +300,30 @@ $(document).ready(function(){
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
       <div>
-<center>
- <div>
- <p><font size="3" color="blue">But,why do I need to pay taxes?Can't I keep all the money that I earn? :(</font></p>
- <p><font size="3" color="purple">We pay taxes for the things we need.</font></p>
- <p><font size="3" color="blue">Like a car?</font></p>
- <p><font size="3" color="purple">No,taxes don't pay for our car.I pay for my car</font></p>
- <p><font size="3" color="purple">But what do cars run on?</font></p>
- <p><font size="3" color="blue">The road?</font></p>
- <p><font size="3" color="purple">Yes,what pays for the road?</font></p>
- <p><font  color="blue">TAXES!!!</font></p>
- <p><font color="purple">There you go,kiddo!</font></p>
- </center>
- </div>
-</div>
+		<center>
+			<p><font size="3" color="blue">But,why do I need to pay taxes?Can't I keep all the money that I earn? :(</font></p>
+ 			<p><font size="3" color="purple">We pay taxes for the things we need.</font></p>
+ 			<p><font size="3" color="blue">Like a car?</font></p>
+ 			<p><font size="3" color="purple">No,taxes don't pay for our car.I pay for my car</font></p>
+ 			<p><font size="3" color="purple">But what do cars run on?</font></p>
+ 			<p><font size="3" color="blue">The road?</font></p>
+ 			<p><font size="3" color="purple">Yes,what pays for the road?</font></p>
+ 			<p><font  color="blue">TAXES!!!</font></p>
+ 			<p><font color="purple">There you go,kiddo!</font></p>
+ 		</center>
+ 		</div>
+	</div>
     </div>
   </div>
 
-<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog1" aria-labelledby="mySmallModalLabel" style="z-index:10000;" id="yaay">
-  <div class="modal-dialog modal-sm">
-    <div class="modal-content">
-      <div>
-           <h1>Yaay!...</h1>
-      </div>
-    </div>
-  </div>
+<div class="modal fade bs-homework-modal-sm" tabindex="-1" role="dialog1" aria-labelledby="mySmallModalLabel" style="z-index:10000;">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div>
+				<p><font size="3" color="blue">Yaay!...</font></p>
+			</div>
+		</div>
+	</div>
 </div>
 </body>
 </html>

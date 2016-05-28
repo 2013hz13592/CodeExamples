@@ -2,8 +2,10 @@ var myapp = angular.module("myAppReg",[]);
 
 myapp.controller("myController", function($scope,$http) {
 
+$scope.score=0;
+	
 $scope.pushToBank=function(){
-
+		
 		var inputData = {
 				toAccountNumber:'6000025',
 				toSortCode: '839999',
@@ -29,7 +31,8 @@ $scope.pushToBank=function(){
 		});
 	}
 $scope.updateScore=function(){
-	alert("hi");
+	//alert("Score: "+$scope.score);
 	$scope.score+=20;
+	//alert("Score: "+$scope.score);
 }
 });

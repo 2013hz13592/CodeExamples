@@ -100,6 +100,7 @@ public class WebScraperServlet extends HttpServlet {
 		Calendar midnight = null;
 		Calendar fiveMinutesPastMidnight = null;
 		boolean getLatestComment=true;
+		boolean getSentiment=false;
 		StringBuilder delimitedData=new StringBuilder();
 		
 		try{
@@ -120,6 +121,19 @@ public class WebScraperServlet extends HttpServlet {
 			try{
 				lastRunDate=dateFormatter.parse(stringLastRunDate);
 			}catch (ParseException e){
+				System.err.println("Something went wrong while formatting lastRunDate");
+				e.printStackTrace();
+			}
+		}
+		//Use the last run date from request parameter if it is available. This will override memcache value
+		String date = req.getParameter("date");
+		if(date==null){
+			;
+		}else{
+			stringLastRunDate=date;
+			try {
+				lastRunDate=dateFormatter.parse(stringLastRunDate);
+			} catch (ParseException e) {
 				System.err.println("Something went wrong while formatting lastRunDate");
 				e.printStackTrace();
 			}
@@ -158,9 +172,28 @@ public class WebScraperServlet extends HttpServlet {
 		if(Calendar.getInstance(UTC).getTime().after(midnight.getTime()) && Calendar.getInstance(UTC).getTime().before(fiveMinutesPastMidnight.getTime())){
 			getLatestComment=false;
 		}
+		//If run now parameter in the request is set then get all the comments
+		String runtype=req.getParameter("runtype");
+		if(runtype==null){
+			
+		}else{
+			if(req.getParameter("runtype").equals("fullreport"))
+			{
+				getLatestComment=false;
+			}
+		}
+		//If sentiment analysis is not checked then don't call sentiment API
+		String sentiment = req.getParameter("sentiment");
+		if(sentiment==null){
+			;
+		}else{
+			if(sentiment.equals("getSentiment")){
+				getSentiment=true;
+			}
+		}
 		//Parse the RBS Idea Bank Portal and obtain the comma delimited output String
 		try {
-			delimitedData=parsePage(getLatestComment);
+			delimitedData=parsePage(getLatestComment, getSentiment);
 		} catch (GeneralSecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -199,9 +232,12 @@ public class WebScraperServlet extends HttpServlet {
 		}
 	}
 	
-	public StringBuilder parsePage(boolean getLatestComment) throws IOException, GeneralSecurityException{
+	public StringBuilder parsePage(boolean getLatestComment, boolean getSentiment) throws IOException, GeneralSecurityException{
 		int pageNumber=0;
-		boolean processAll = true;
+		int apiUsageCount=0;
+		long startTime=System.currentTimeMillis();
+		boolean processAll=true;
+		boolean labelIsPredicted=false;
 		String url=new String();
 		String author=new String();
 		String subject=new String();
@@ -341,7 +377,16 @@ public class WebScraperServlet extends HttpServlet {
 				//If labels are not available call Google Predictor API for a label
 				if (label1.isEmpty() && label2.isEmpty() && label3.isEmpty()){
 					try{
+						if(apiUsageCount==90){
+							if((System.currentTimeMillis() - startTime)<100000){
+								while((System.currentTimeMillis() - startTime)<100000);
+								//Reset the variable and proceed
+								startTime=System.currentTimeMillis();
+								apiUsageCount=0;
+							}
+						}
 						predictedLabel=predictLabel(userComment.replace(",", "").trim());
+						apiUsageCount++;
 						delimitedData=delimitedData.append(",");
 						delimitedData=delimitedData.append(predictedLabel.replace(",", ""));
 						delimitedData=delimitedData.append(",");
@@ -349,6 +394,7 @@ public class WebScraperServlet extends HttpServlet {
 						delimitedData=delimitedData.append(",");
 						//Add an identifier that the label is a predicted value
 						delimitedData=delimitedData.append("Y");
+						labelIsPredicted=true;
 					}catch (IOException | GeneralSecurityException e){
 						System.err.println("Something went wrong while predicting");
 						e.printStackTrace();
@@ -389,10 +435,35 @@ public class WebScraperServlet extends HttpServlet {
 					System.err.println("Something went wrong while formatting commentDate");
 					e.printStackTrace();
 				}
+				//If the api has been called 90 times within 100 seconds then wait for quota to be available
+				if(apiUsageCount==90){
+					if((System.currentTimeMillis() - startTime)<100000){
+						while((System.currentTimeMillis() - startTime)<100000);
+						//Reset the variable and proceed
+						startTime=System.currentTimeMillis();
+						apiUsageCount=0;
+					}
+				}
 				//Predict the sentiment
-				predictedSentiment=predictSentiment(userComment.replace(",", "").trim());
-				delimitedData=delimitedData.append(",");
-				delimitedData=delimitedData.append(predictedLabel.replace(",", ""));				
+				if(getSentiment){
+					predictedSentiment=predictSentiment(userComment.replace(",", "").trim());
+					apiUsageCount++;
+					delimitedData=delimitedData.deleteCharAt(delimitedData.length()-1);
+					if(label2.isEmpty() && label3.isEmpty() && !labelIsPredicted){
+						delimitedData=delimitedData.append(",");
+						delimitedData=delimitedData.append(",");
+						delimitedData=delimitedData.append(",");
+					}
+					if(label3.isEmpty() && !labelIsPredicted){
+						delimitedData=delimitedData.append(",");
+						delimitedData=delimitedData.append(",");
+					}
+					//Initialize labelIsPredicted for processing next row
+					labelIsPredicted=false;
+					delimitedData=delimitedData.append(",");
+					delimitedData=delimitedData.append(predictedSentiment.replace(",", ""));
+					delimitedData=delimitedData.append("\n");
+				}
 				//Convert the comment time to a Time object
 				try{
 					commentTime=new Time(timeFormatter.parse(time.trim()).getTime());

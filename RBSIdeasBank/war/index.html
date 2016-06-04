@@ -9,11 +9,11 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>Hello App Engine</title>
+    <title>RBS Ideas Bank App Engine</title>
   </head>
 
   <body>
-    <h1>Hello App Engine!</h1>
+    <h1>RBS Ideas Bank App Engine!</h1>
 	
     <table>
       <tr>
@@ -23,5 +23,20 @@
         <td><a href="WebScraperServlet">WebScraperServlet</a></td>
       </tr>
     </table>
+    <form action="WebScraperServlet">
+		<input type="radio" name="runtype" value="GetLatestComment" checked>Fetch Latest Comment
+		<input type="text" name="date" value="mm-dd-yyyy"><br>
+		<input type="radio" name="runtype" value="fullreport">Generate Full Report<br>
+		<input type="checkbox" name="sentiment" value="getSentiment">Sentiment Analysis<br>
+		<!--<select name="lob">
+  			<option value="OnlineBanking">Online Banking</option>
+  			<option value="MobileBanking">Mobile Banking</option>
+  			<option value="CurrentAccounts">Current Accounts</option>
+  			<option value="CreditCards">Credit Cards</option>
+		</select>
+		Email:<br>
+		<input type="text" name="email" value=""><br>-->		
+		<input type="submit" value="Submit">
+	</form>
   </body>
 </html>

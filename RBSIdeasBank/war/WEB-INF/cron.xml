@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
-  <cron>
+<!--<cron>
     <url>/WebScraperServlet</url>
     <description>Check for new comments</description>
     <schedule>every 20 mins</schedule>
     <timezone>UTC</timezone>
     <target>version-2</target>
-  </cron>
+  </cron> -->
   <cron>
     <url>/WebScraperServlet</url>
     <description>Mail out a daily report</description>

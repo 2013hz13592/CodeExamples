@@ -64,6 +64,7 @@ public class WebScraperServlet extends HttpServlet {
 	private static final GcsService gcsService = GcsServiceFactory.createGcsService(RetryParams.getDefaultInstance());
 	private static final String PROJECT_ID = "786374646928";
 	private static final String MODEL_ID = "lobPredictor";
+	private static final String MODEL2_ID = "sentimentPredictor";
 	private static final String APPLICATION_NAME = "certain-density-126216.appspot.com";
 	// Global instance of the JSON factory.
 	private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
@@ -158,7 +159,12 @@ public class WebScraperServlet extends HttpServlet {
 			getLatestComment=false;
 		}
 		//Parse the RBS Idea Bank Portal and obtain the comma delimited output String
-		delimitedData=parsePage(getLatestComment);
+		try {
+			delimitedData=parsePage(getLatestComment);
+		} catch (GeneralSecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		//Once all the records are processed update the lastRunDate/lastRun Time to the date/time of the first comment on the first page i.e. the latest comment
 		if(newComment){
 			lastRunDate=updateLastRunDate;
@@ -193,7 +199,7 @@ public class WebScraperServlet extends HttpServlet {
 		}
 	}
 	
-	public StringBuilder parsePage(boolean getLatestComment){
+	public StringBuilder parsePage(boolean getLatestComment) throws IOException, GeneralSecurityException{
 		int pageNumber=0;
 		boolean processAll = true;
 		String url=new String();
@@ -204,7 +210,7 @@ public class WebScraperServlet extends HttpServlet {
 		String time=new String();
 		String userComment=new String();
 		String dateTime=new String();
-		String label1=new String(), label2=new String(), label3=new String(), predictedLabel=new String();
+		String label1=new String(), label2=new String(), label3=new String(), predictedLabel=new String(), predictedSentiment = new String();
 		Date commentDate=null;
 		Time commentTime=null;
 		Document doc=null;
@@ -335,14 +341,14 @@ public class WebScraperServlet extends HttpServlet {
 				//If labels are not available call Google Predictor API for a label
 				if (label1.isEmpty() && label2.isEmpty() && label3.isEmpty()){
 					try{
-						predictedLabel=predict(userComment.replace(",", "").trim());
+						predictedLabel=predictLabel(userComment.replace(",", "").trim());
 						delimitedData=delimitedData.append(",");
 						delimitedData=delimitedData.append(predictedLabel.replace(",", ""));
 						delimitedData=delimitedData.append(",");
 						delimitedData=delimitedData.append(",");
 						delimitedData=delimitedData.append(",");
 						//Add an identifier that the label is a predicted value
-						delimitedData=delimitedData.append("Y");		
+						delimitedData=delimitedData.append("Y");
 					}catch (IOException | GeneralSecurityException e){
 						System.err.println("Something went wrong while predicting");
 						e.printStackTrace();
@@ -383,6 +389,10 @@ public class WebScraperServlet extends HttpServlet {
 					System.err.println("Something went wrong while formatting commentDate");
 					e.printStackTrace();
 				}
+				//Predict the sentiment
+				predictedSentiment=predictSentiment(userComment.replace(",", "").trim());
+				delimitedData=delimitedData.append(",");
+				delimitedData=delimitedData.append(predictedLabel.replace(",", ""));				
 				//Convert the comment time to a Time object
 				try{
 					commentTime=new Time(timeFormatter.parse(time.trim()).getTime());
@@ -470,7 +480,7 @@ public class WebScraperServlet extends HttpServlet {
 		}
 	}
 	
-	public String predict(String text) throws IOException, GeneralSecurityException {
+	public String predictLabel(String text) throws IOException, GeneralSecurityException {
 		httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 		GoogleCredential credential = GoogleCredential.getApplicationDefault();
 		if (credential.createScopedRequired()) {
@@ -482,6 +492,21 @@ public class WebScraperServlet extends HttpServlet {
 	    inputInput.setCsvInstance(Collections.<Object>singletonList(text));
 	    input.setInput(inputInput);
 	    Output output = prediction.trainedmodels().predict(PROJECT_ID, MODEL_ID, input).execute();
+	    return output.getOutputLabel();
+	 }
+	
+	public String predictSentiment(String text) throws IOException, GeneralSecurityException {
+		httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+		GoogleCredential credential = GoogleCredential.getApplicationDefault();
+		if (credential.createScopedRequired()) {
+		    credential = credential.createScoped(PredictionScopes.all());
+		}
+		Prediction prediction = new Prediction.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
+	    Input input = new Input();
+	    InputInput inputInput = new InputInput();
+	    inputInput.setCsvInstance(Collections.<Object>singletonList(text));
+	    input.setInput(inputInput);
+	    Output output = prediction.trainedmodels().predict(PROJECT_ID, MODEL2_ID, input).execute();
 	    return output.getOutputLabel();
 	 }
 }

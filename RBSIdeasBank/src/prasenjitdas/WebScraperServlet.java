@@ -1,3 +1,7 @@
+/* This program fetches data from RBS Ideas Bank page
+ * and parses the data to create a csv file
+ */
+
 package prasenjitdas;
 
 import java.io.ByteArrayInputStream;
@@ -260,7 +264,7 @@ public class WebScraperServlet extends HttpServlet {
 		updateLastRunDate=null;
 		updateLastRunTime=null;
 		
-		delimitedData=delimitedData.append("Subject,Status,Author,Date,Time,Comment,Label1,Label2,Label3,Predicted\n");
+		delimitedData=delimitedData.append("Subject,Status,Author,Date,Time,Comment,Label1,Label2,Label3,Predicted,Sentiment\n");
 		while(processAll)
 		{
 			//Increment  Page Number for fetching next page
@@ -453,10 +457,14 @@ public class WebScraperServlet extends HttpServlet {
 						delimitedData=delimitedData.append(",");
 						delimitedData=delimitedData.append(",");
 						delimitedData=delimitedData.append(",");
-					}
-					if(label3.isEmpty() && !labelIsPredicted){
-						delimitedData=delimitedData.append(",");
-						delimitedData=delimitedData.append(",");
+					}else{
+						if(label3.isEmpty() && !labelIsPredicted){
+							delimitedData=delimitedData.append(",");
+							delimitedData=delimitedData.append(",");
+						}else
+							if(!labelIsPredicted){
+								delimitedData=delimitedData.append(",");
+							}
 					}
 					//Initialize labelIsPredicted for processing next row
 					labelIsPredicted=false;

@@ -18,7 +18,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.TimeZone;
 
@@ -199,7 +198,6 @@ public class WebScraperServlet extends HttpServlet {
 		try {
 			delimitedData=parsePage(getLatestComment, getSentiment);
 		} catch (GeneralSecurityException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		//Once all the records are processed update the lastRunDate/lastRun Time to the date/time of the first comment on the first page i.e. the latest comment

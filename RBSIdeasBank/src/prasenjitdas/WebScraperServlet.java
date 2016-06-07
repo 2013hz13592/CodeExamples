@@ -186,7 +186,7 @@ public class WebScraperServlet extends HttpServlet {
 			}
 		}
 		//If sentiment analysis is not checked then don't call sentiment API
-		String sentiment = req.getParameter("sentiment");
+		String sentiment=req.getParameter("sentiment");
 		if(sentiment==null){
 			;
 		}else{
@@ -194,9 +194,11 @@ public class WebScraperServlet extends HttpServlet {
 				getSentiment=true;
 			}
 		}
+		//If lob is populated then extract the data only for matching lob
+		String lob=req.getParameter("lob");
 		//Parse the RBS Idea Bank Portal and obtain the comma delimited output String
 		try {
-			delimitedData=parsePage(getLatestComment, getSentiment);
+			delimitedData=parsePage(getLatestComment, getSentiment, lob);
 		} catch (GeneralSecurityException e) {
 			e.printStackTrace();
 		}
@@ -230,16 +232,21 @@ public class WebScraperServlet extends HttpServlet {
 				delimitedData.delete(0, delimitedData.length());
 				delimitedData=delimitedData.append(";;;;;;;;;");
 			}
-			sendMessage(htmlBody, delimitedData, filename);
+			
+			String emailAddress=req.getParameter("email");
+			sendMessage(emailAddress, htmlBody, delimitedData, filename);
 		}
 	}
 	
-	public StringBuilder parsePage(boolean getLatestComment, boolean getSentiment) throws IOException, GeneralSecurityException{
+	public StringBuilder parsePage(boolean getLatestComment, boolean getSentiment, String lob) throws IOException, GeneralSecurityException{
 		int pageNumber=0;
 		int apiUsageCount=0;
 		long startTime=System.currentTimeMillis();
+		
 		boolean processAll=true;
 		boolean labelIsPredicted=false;
+		boolean display=true;
+		
 		String url=new String();
 		String author=new String();
 		String subject=new String();
@@ -359,26 +366,12 @@ public class WebScraperServlet extends HttpServlet {
 				}catch(Exception e){
 					e.printStackTrace();
 				}
-				//Subject
-				delimitedData=delimitedData.append(subject.replace(",", ""));
-				delimitedData=delimitedData.append(",");
-				//Status
-				delimitedData=delimitedData.append(status.replace(",", ""));
-				delimitedData=delimitedData.append(",");
-				//Author
-				delimitedData=delimitedData.append(author.replace(",", ""));
-				delimitedData=delimitedData.append(",");
-				//Add date to output, edited date will not be displayed
-				delimitedData=delimitedData.append(date.substring(1,11).trim());
-				delimitedData=delimitedData.append(",");
-				//Add time to output, edited time will not be displayed
-				delimitedData=delimitedData.append(time.trim());
-				delimitedData=delimitedData.append(",");			
-				//Add User Comment
-				delimitedData=delimitedData.append(userComment.replace(",", "").trim());
-				//If labels are not available call Google Predictor API for a label
-				if (label1.isEmpty() && label2.isEmpty() && label3.isEmpty()){
-					try{
+				//Add data only if lob value equals label or lob value is not passed through request
+				display=false;
+				if (lob==null){
+					display=true;
+				}else{
+					if(label1.isEmpty() && getLatestComment){
 						if(apiUsageCount==90){
 							if((System.currentTimeMillis() - startTime)<100000){
 								while((System.currentTimeMillis() - startTime)<100000);
@@ -388,113 +381,150 @@ public class WebScraperServlet extends HttpServlet {
 							}
 						}
 						predictedLabel=predictLabel(userComment.replace(",", "").trim());
-						apiUsageCount++;
-						delimitedData=delimitedData.append(",");
-						delimitedData=delimitedData.append(predictedLabel.replace(",", ""));
-						delimitedData=delimitedData.append(",");
-						delimitedData=delimitedData.append(",");
-						delimitedData=delimitedData.append(",");
-						//Add an identifier that the label is a predicted value
-						delimitedData=delimitedData.append("Y");
-						labelIsPredicted=true;
-					}catch (IOException | GeneralSecurityException e){
-						System.err.println("Something went wrong while predicting");
-						e.printStackTrace();
-					}finally{
-						delimitedData=delimitedData.append("\n");
 					}
-				}else{
+					if(lob.equals(label1.replace(" ", "")) || lob.equals(label2.replace(" ", "")) 
+							|| lob.equals(label3.replace(" ", "")) || lob.equals(predictedLabel.replace(" ", "")) || !getLatestComment){
+						display=true;
+					}
+				}
+				if (display){
+					//Subject
+					delimitedData=delimitedData.append(subject.replace(",", ""));
 					delimitedData=delimitedData.append(",");
-				}
-				//Add label1
-				if(!label1.isEmpty()){
-					delimitedData=delimitedData.append(label1.replace(",", ""));
-					if(label2.isEmpty() && label3.isEmpty()){
-						delimitedData=delimitedData.append("\n");
-					}
-					else{
-						delimitedData=delimitedData.append(",");
-					}
-				}
-				//Add label2
-				if(!label2.isEmpty()){
-					delimitedData=delimitedData.append(label2.replace(",", ""));
-					if (label3.isEmpty()){
-						delimitedData=delimitedData.append("\n");
-					}else{
-						delimitedData=delimitedData.append(",");
-					}
-				}
-				//Add label3
-				if(!label3.isEmpty()){
-					delimitedData=delimitedData.append(label3.replace(",", ""));
-					delimitedData=delimitedData.append("\n");
-				}
-				//Convert the comment date to a Date object
-				try{
-					commentDate=dateFormatter.parse(date.substring(1,11).trim());
-				}catch (ParseException e){
-					System.err.println("Something went wrong while formatting commentDate");
-					e.printStackTrace();
-				}
-				//If the api has been called 90 times within 100 seconds then wait for quota to be available
-				if(apiUsageCount==90){
-					if((System.currentTimeMillis() - startTime)<100000){
-						while((System.currentTimeMillis() - startTime)<100000);
-						//Reset the variable and proceed
-						startTime=System.currentTimeMillis();
-						apiUsageCount=0;
-					}
-				}
-				//Predict the sentiment
-				if(getSentiment){
-					predictedSentiment=predictSentiment(userComment.replace(",", "").trim());
-					apiUsageCount++;
-					delimitedData=delimitedData.deleteCharAt(delimitedData.length()-1);
-					if(label2.isEmpty() && label3.isEmpty() && !labelIsPredicted){
-						delimitedData=delimitedData.append(",");
-						delimitedData=delimitedData.append(",");
-						delimitedData=delimitedData.append(",");
-					}else{
-						if(label3.isEmpty() && !labelIsPredicted){
-							delimitedData=delimitedData.append(",");
-							delimitedData=delimitedData.append(",");
-						}else
-							if(!labelIsPredicted){
-								delimitedData=delimitedData.append(",");
+					//Status
+					delimitedData=delimitedData.append(status.replace(",", ""));
+					delimitedData=delimitedData.append(",");
+					//Author
+					delimitedData=delimitedData.append(author.replace(",", ""));
+					delimitedData=delimitedData.append(",");
+					//Add date to output, edited date will not be displayed
+					delimitedData=delimitedData.append(date.substring(1,11).trim());
+					delimitedData=delimitedData.append(",");
+					//Add time to output, edited time will not be displayed
+					delimitedData=delimitedData.append(time.trim());
+					delimitedData=delimitedData.append(",");			
+					//Add User Comment
+					delimitedData=delimitedData.append(userComment.replace(",", "").trim());
+					//If labels are not available call Google Predictor API for a label
+					if (label1.isEmpty() && label2.isEmpty() && label3.isEmpty()){
+						try{
+							if(apiUsageCount==90){
+								if((System.currentTimeMillis() - startTime)<100000){
+									while((System.currentTimeMillis() - startTime)<100000);
+									//Reset the variable and proceed
+									startTime=System.currentTimeMillis();
+									apiUsageCount=0;
+								}
 							}
-					}
-					//Initialize labelIsPredicted for processing next row
-					labelIsPredicted=false;
-					delimitedData=delimitedData.append(",");
-					delimitedData=delimitedData.append(predictedSentiment.replace(",", ""));
-					delimitedData=delimitedData.append("\n");
-				}
-				//Convert the comment time to a Time object
-				try{
-					commentTime=new Time(timeFormatter.parse(time.trim()).getTime());
-				}catch (ParseException e){
-					System.err.println("Something went wrong while formatting commentTime"+time.trim());
-					e.printStackTrace();
-				}
-				//If this is a new comment add it to the message body
-				if(commentDate.after(lastRunDate) || (commentDate.equals(lastRunDate) && commentTime.after(lastRunTime))){
-					if(label1.isEmpty() && label2.isEmpty() && label3.isEmpty()){
-						htmlBody=htmlBody+subject.replace(",", "")+" ("+predictedLabel+")"+"<br>"+userComment.replace(",", "").trim()+"<br><br>";
+							predictedLabel=predictLabel(userComment.replace(",", "").trim());
+							apiUsageCount++;
+							delimitedData=delimitedData.append(",");
+							delimitedData=delimitedData.append(predictedLabel.replace(",", ""));
+							delimitedData=delimitedData.append(",");
+							delimitedData=delimitedData.append(",");
+							delimitedData=delimitedData.append(",");
+							//Add an identifier that the label is a predicted value
+							delimitedData=delimitedData.append("Y");
+							labelIsPredicted=true;
+						}catch (IOException | GeneralSecurityException e){
+							System.err.println("Something went wrong while predicting");
+							e.printStackTrace();
+						}finally{
+							delimitedData=delimitedData.append("\n");
+						}
 					}else{
-						htmlBody=htmlBody+subject.replace(",", "")+" ("+label1+")"+"<br>"+userComment.replace(",", "").trim()+"<br><br>";
-					}	
-					//Update the lastRunDate/lastRun Time to the date/time of the first comment on the first page i.e. the latest comment
-					if(!newComment){
-						updateLastRunDate=commentDate;
-						updateLastRunTime=commentTime;
+						delimitedData=delimitedData.append(",");
 					}
-					newComment=true;
-				}else{
-				//Stop processing pages once comments added since last run are processed if getLatestComment flag is true
-					if(getLatestComment){
-						processAll=false;
-						break;
+					//Add label1
+					if(!label1.isEmpty()){
+						delimitedData=delimitedData.append(label1.replace(",", ""));
+						if(label2.isEmpty() && label3.isEmpty()){
+							delimitedData=delimitedData.append("\n");
+						}
+						else{
+							delimitedData=delimitedData.append(",");
+						}
+					}
+					//Add label2
+					if(!label2.isEmpty()){
+						delimitedData=delimitedData.append(label2.replace(",", ""));
+						if (label3.isEmpty()){
+							delimitedData=delimitedData.append("\n");
+						}else{
+							delimitedData=delimitedData.append(",");
+						}
+					}
+					//Add label3
+					if(!label3.isEmpty()){
+						delimitedData=delimitedData.append(label3.replace(",", ""));
+						delimitedData=delimitedData.append("\n");
+					}
+					//Convert the comment date to a Date object
+					try{
+						commentDate=dateFormatter.parse(date.substring(1,11).trim());
+					}catch (ParseException e){
+						System.err.println("Something went wrong while formatting commentDate");
+						e.printStackTrace();
+					}
+					//If the api has been called 90 times within 100 seconds then wait for quota to be available
+					if(apiUsageCount==90){
+						if((System.currentTimeMillis() - startTime)<100000){
+							while((System.currentTimeMillis() - startTime)<100000);
+							//Reset the variable and proceed
+							startTime=System.currentTimeMillis();
+							apiUsageCount=0;
+						}
+					}
+					//Predict the sentiment
+					if(getSentiment){
+						predictedSentiment=predictSentiment(userComment.replace(",", "").trim());
+						apiUsageCount++;
+						delimitedData=delimitedData.deleteCharAt(delimitedData.length()-1);
+						if(label2.isEmpty() && label3.isEmpty() && !labelIsPredicted){
+							delimitedData=delimitedData.append(",");
+							delimitedData=delimitedData.append(",");
+							delimitedData=delimitedData.append(",");
+						}else{
+							if(label3.isEmpty() && !labelIsPredicted){
+								delimitedData=delimitedData.append(",");
+								delimitedData=delimitedData.append(",");
+							}else
+								if(!labelIsPredicted){
+									delimitedData=delimitedData.append(",");
+								}
+						}
+						//Initialize labelIsPredicted for processing next row
+						labelIsPredicted=false;
+						delimitedData=delimitedData.append(",");
+						delimitedData=delimitedData.append(predictedSentiment.replace(",", ""));
+						delimitedData=delimitedData.append("\n");
+					}
+					//Convert the comment time to a Time object
+					try{
+						commentTime=new Time(timeFormatter.parse(time.trim()).getTime());
+					}catch (ParseException e){
+						System.err.println("Something went wrong while formatting commentTime"+time.trim());
+						e.printStackTrace();
+					}
+					//If this is a new comment add it to the message body
+					if(commentDate.after(lastRunDate) || (commentDate.equals(lastRunDate) && commentTime.after(lastRunTime))){
+						if(label1.isEmpty() && label2.isEmpty() && label3.isEmpty()){
+							htmlBody=htmlBody+subject.replace(",", "")+" ("+predictedLabel+")"+"<br>"+userComment.replace(",", "").trim()+"<br><br>";
+						}else{
+							htmlBody=htmlBody+subject.replace(",", "")+" ("+label1+")"+"<br>"+userComment.replace(",", "").trim()+"<br><br>";
+						}	
+						//Update the lastRunDate/lastRun Time to the date/time of the first comment on the first page i.e. the latest comment
+						if(!newComment){
+							updateLastRunDate=commentDate;
+							updateLastRunTime=commentTime;
+						}
+						newComment=true;
+					}else{
+					//Stop processing pages once comments added since last run are processed if getLatestComment flag is true
+						if(getLatestComment){
+							processAll=false;
+							break;
+						}
 					}
 				}
 			}
@@ -517,7 +547,7 @@ public class WebScraperServlet extends HttpServlet {
 		printOutput.close();
 	}
 	
-	public void sendMessage(String messageBody, StringBuilder attachmentData, String attachmentFilename){
+	public void sendMessage(String emailAddress, String messageBody, StringBuilder attachmentData, String attachmentFilename){
 		Properties props = new Properties();
 		Session session = Session.getDefaultInstance(props, null);
 	    try {
@@ -542,6 +572,9 @@ public class WebScraperServlet extends HttpServlet {
 	    	msg.setFrom(new InternetAddress("daemon@certain-density-126216.appspotmail.com", "WebScraperDaemon"));
 	    	msg.addRecipient(Message.RecipientType.TO, new InternetAddress("prasenjit.das@gmail.com", "Prasenjit Das"));
 	    	msg.addRecipient(Message.RecipientType.CC, new InternetAddress("prasenjit_das@infosys.com", "Prasenjit Das"));
+	    	if(emailAddress!=null){
+	    		msg.addRecipient(Message.RecipientType.CC, new InternetAddress(emailAddress, "Prasenjit Das"));
+	    	}
 	    	msg.setSubject("Output from RBS communities");
 	    	msg.setContent(mp);
 	    	Transport.send(msg);

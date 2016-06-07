@@ -25,17 +25,17 @@
     </table>
     <form action="WebScraperServlet">
 		<input type="radio" name="runtype" value="GetLatestComment" checked>Fetch Latest Comment
-		<input type="text" name="date" value="mm-dd-yyyy"><br>
+		<input type="text" name="date" value="dd-mm-yyyy"><br>
 		<input type="radio" name="runtype" value="fullreport">Generate Full Report<br>
 		<input type="checkbox" name="sentiment" value="getSentiment">Sentiment Analysis<br>
-		<!--<select name="lob">
+		<select name="lob">
   			<option value="OnlineBanking">Online Banking</option>
   			<option value="MobileBanking">Mobile Banking</option>
   			<option value="CurrentAccounts">Current Accounts</option>
   			<option value="CreditCards">Credit Cards</option>
-		</select>
+		</select><br>
 		Email:<br>
-		<input type="text" name="email" value=""><br>-->		
+		<input type="text" name="email" value=""><br>		
 		<input type="submit" value="Submit">
 	</form>
   </body>
